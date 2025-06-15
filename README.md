@@ -1,4 +1,4 @@
-Забилдить в докере - docker-compose up --build
+Забилдить в докере - "docker-compose up --build"
 После чего сайт открывается тут - http://localhost:5000/
 
 Файловая структура -
