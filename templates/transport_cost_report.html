@@ -1,50 +1,67 @@
-{% extends "base.html" %}
-
-{% block title %}Отчет по стоимости перевозок за {{ year }} год{% endblock %}
+{% extends 'base.html' %}
 
 {% block content %}
-    <h1 class="mb-4">Отчет по стоимости перевозок за {{ year }} год</h1>
-    
-    <div class="card mb-4">
-        <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h5 class="card-title">Итоговая статистика</h5>
-                    <p class="card-text">
-                        Общая стоимость: <strong>{{ total_cost|round(2) }} руб</strong><br>
-                        Количество заказов: <strong>{{ total_orders }}</strong>
-                    </p>
-                </div>
-                <a href="#" class="btn btn-outline-primary">Экспорт в PDF</a>
+<h1>Отчет по стоимости перевозок за год</h1>
+
+<form method="POST">
+    {{ form.hidden_tag() }}
+    <div class="form-group">
+        {{ form.year.label }}
+        {{ form.year(class="form-control") }}
+        {% if form.year.errors %}
+            <div class="alert alert-danger">
+                {% for error in form.year.errors %}
+                    {{ error }}
+                {% endfor %}
             </div>
-        </div>
+        {% endif %}
     </div>
+    <button type="submit" class="btn btn-primary">Сформировать</button>
+</form>
+
+{% if year %}
+    <hr>
+    <h2>Отчет за {{ year }} год</h2>
     
-    <div class="table-responsive">
+    {% if not report_data %}
+        <div class="alert alert-warning">
+            Нет данных о перевозках за указанный год
+        </div>
+    {% else %}
         <table class="table table-striped">
             <thead>
                 <tr>
                     <th>Месяц</th>
-                    <th>Сумма перевозок (руб)</th>
-                    <th>Кол-во заказов</th>
+                    <th>Стоимость перевозок</th>
+                    <th>Количество заказов</th>
                 </tr>
             </thead>
             <tbody>
-                {% for row in report_data %}
+                {% for item in report_data %}
                     <tr>
-                        <td>{{ row.month }}</td>
-                        <td>{{ row.total_cost|round(2) }}</td>
-                        <td>{{ row.orders_count }}</td>
+                        <td>{{ item.month }}</td>
+                        <td>{{ item.total_cost|round(2) }} руб</td>
+                        <td>{{ item.orders_count }}</td>
                     </tr>
                 {% endfor %}
             </tbody>
-            <tfoot class="table-dark">
-                <tr>
-                    <th>ИТОГО:</th>
-                    <th>{{ total_cost|round(2) }}</th>
+            <tfoot>
+                <tr class="table-info">
+                    <th>Итого:</th>
+                    <th>{{ total_cost|round(2) }} руб</th>
                     <th>{{ total_orders }}</th>
                 </tr>
             </tfoot>
         </table>
-    </div>
+        
+        <div class="mt-4">
+            <h3>Общая статистика:</h3>
+            <ul>
+                <li>Общая стоимость перевозок: <strong>{{ total_cost|round(2) }} руб</strong></li>
+                <li>Всего выполнено заказов: <strong>{{ total_orders }}</strong></li>
+                <li>Средняя стоимость заказа: <strong>{{ (total_cost/total_orders)|round(2) if total_orders > 0 else 0 }} руб</strong></li>
+            </ul>
+        </div>
+    {% endif %}
+{% endif %}
 {% endblock %}

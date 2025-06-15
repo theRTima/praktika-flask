@@ -354,48 +354,68 @@ def reports():
 @app.route('/reports/transport_cost', methods=['GET', 'POST'])
 def transport_cost_report():
     form = ReportForm()
+    report_data = None
+    year = None
+    total_cost = 0
+    total_orders = 0
+    
     if form.validate_on_submit():
         year = form.year.data
+        
+        if not year:
+            flash('Пожалуйста, введите год для формирования отчета', 'danger')
+            return render_template('report_form.html', form=form, title='Отчет по стоимости перевозок за год')
+        
         conn = get_db_connection()
         cur = conn.cursor()
-        cur.execute("""
-            SELECT 
-                EXTRACT(MONTH FROM order_date) AS month,
-                SUM(order_cost) AS total_cost,
-                COUNT(*) AS orders_count
-            FROM orders
-            WHERE EXTRACT(YEAR FROM order_date) = %s
-            GROUP BY EXTRACT(MONTH FROM order_date)
-            ORDER BY month
-        """, (year,))
-        data = cur.fetchall()
-        cur.close()
-        conn.close()
+        try:
+            cur.execute("""
+                SELECT 
+                    EXTRACT(MONTH FROM order_date) AS month,
+                    SUM(order_cost) AS total_cost,
+                    COUNT(*) AS orders_count
+                FROM orders
+                WHERE EXTRACT(YEAR FROM order_date) = %s
+                GROUP BY EXTRACT(MONTH FROM order_date)
+                ORDER BY month
+            """, (year,))
+            data = cur.fetchall()
+            
+            months = [
+                "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
+                "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"
+            ]
+            
+            report_data = []
+            for row in data:
+                month_idx = int(row[0]) - 1
+                if 0 <= month_idx < len(months):
+                    month_name = months[month_idx]
+                    report_data.append({
+                        'month': month_name,
+                        'total_cost': row[1],
+                        'orders_count': row[2]
+                    })
+            
+            if report_data:
+                total_cost = sum(row['total_cost'] for row in report_data)
+                total_orders = sum(row['orders_count'] for row in report_data)
+            else:
+                flash(f'Нет данных о перевозках за {year} год', 'warning')
+                
+        except psycopg2.Error as e:
+            flash(f'Ошибка при получении данных: {e}', 'danger')
+        finally:
+            cur.close()
+            conn.close()
 
-        months = [
-            "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
-            "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"
-        ]
-        report_data = []
-        for row in data:
-            month_name = months[int(row[0]) - 1]
-            report_data.append({
-                'month': month_name,
-                'total_cost': row[1],
-                'orders_count': row[2]
-            })
-
-        total_cost = sum(row[1] for row in data)
-        total_orders = sum(row[2] for row in data)
-
-        return render_template('transport_cost_report.html', 
-                               year=year, 
-                               report_data=report_data,
-                               total_cost=total_cost,
-                               total_orders=total_orders)
-
-    return render_template('report_form.html', form=form, title='Отчет по стоимости перевозок за год')
-
+    return render_template('transport_cost_report.html', 
+                           form=form,
+                           year=year,
+                           report_data=report_data,
+                           total_cost=total_cost,
+                           total_orders=total_orders)
+                           
 @app.route('/reports/driver_efficiency', methods=['GET', 'POST'])
 def driver_efficiency_report():
     conn = get_db_connection()
