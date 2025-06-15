@@ -3,14 +3,14 @@
 {% block title %}Главная{% endblock %}
 
 {% block content %}
-    <h1>Добро пожаловать в систему управления транспортной компанией!</h1>
+    <h1>Система управления транспортной компанией.</h1>
     <p class="lead">Используйте меню для навигации по разделам приложения.</p>
     <div class="row mt-5">
         <div class="col-md-4">
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title">Управление техникой</h5>
-                    <p class="card-text">Добавление, редактирование и удаление транспортных средств</p>
+                    <h5 class="card-title">Просмотр техники</h5>
+                    <p class="card-text">Просмотр транспортных средств</p>
                     <a href="{{ url_for('cars') }}" class="btn btn-primary">Перейти</a>
                 </div>
             </div>
@@ -18,8 +18,8 @@
         <div class="col-md-4">
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title">Управление водителями</h5>
-                    <p class="card-text">Регистрация и управление данными водителей</p>
+                    <h5 class="card-title">Просмотр водителей</h5>
+                    <p class="card-text">Просмотр данных водителей</p>
                     <a href="{{ url_for('drivers') }}" class="btn btn-primary">Перейти</a>
                 </div>
             </div>

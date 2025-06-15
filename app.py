@@ -418,63 +418,142 @@ def transport_cost_report():
                            
 @app.route('/reports/driver_efficiency', methods=['GET', 'POST'])
 def driver_efficiency_report():
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute("""
-        SELECT driver_id, second_name || ' ' || first_name || ' ' || patronymic 
-        FROM drivers 
-        ORDER BY driver_id
-    """)
-    drivers = cur.fetchall()
-    cur.close()
-    conn.close()
-
-    if request.method == 'POST':
-        driver_id = request.form['driver_id']
+    try:
+        # Получаем список водителей с защитой от ошибок
         conn = get_db_connection()
         cur = conn.cursor()
-        cur.execute("""
-            SELECT 
-                second_name || ' ' || first_name || ' ' || patronymic,
-                hire_date, car_id
-            FROM drivers
-            WHERE driver_id = %s
-        """, (driver_id,))
-        driver_info = cur.fetchone()
-        
-        cur.execute("""
-            SELECT 
-                COUNT(*) AS total_orders,
-                SUM(order_cost) AS total_revenue,
-                AVG(order_cost) AS avg_order_cost,
-                MIN(order_date) AS first_order_date,
-                MAX(order_date) AS last_order_date
-            FROM orders
-            WHERE driver_id = %s
-        """, (driver_id,))
-        stats = cur.fetchone()
-        
-        cur.execute("""
-            SELECT 
-                TO_CHAR(order_date, 'YYYY-MM') AS month,
-                COUNT(*) AS orders_count,
-                SUM(order_cost) AS month_revenue
-            FROM orders
-            WHERE driver_id = %s
-            GROUP BY TO_CHAR(order_date, 'YYYY-MM')
-            ORDER BY month
-        """, (driver_id,))
-        monthly_stats = cur.fetchall()
-        cur.close()
-        conn.close()
-        
-        return render_template('driver_efficiency_report.html', 
-                               driver_id=driver_id,
-                               driver_info=driver_info,
-                               stats=stats,
-                               monthly_stats=monthly_stats)
+        try:
+            cur.execute("""
+                SELECT driver_id, 
+                       CONCAT(second_name, ' ', first_name, 
+                              COALESCE(' ' || patronymic, '')) AS driver_name
+                FROM drivers 
+                ORDER BY driver_id
+            """)
+            drivers = cur.fetchall()
+        except psycopg2.Error as e:
+            app.logger.error(f"Ошибка при получении списка водителей: {e}")
+            flash('Ошибка при получении списка водителей', 'danger')
+            drivers = []
+        finally:
+            cur.close()
+            conn.close()
 
-    return render_template('select_driver.html', drivers=drivers, title='Отчет по эффективности водителя')
+        # Если форма отправлена
+        if request.method == 'POST':
+            driver_id = request.form.get('driver_id')
+            if not driver_id:
+                flash('Не выбран водитель', 'danger')
+                return render_template('select_driver.html', drivers=drivers, title='Отчет по эффективности водителя')
+            
+            try:
+                # Получаем информацию о водителе
+                conn = get_db_connection()
+                cur = conn.cursor()
+                
+                # Получение основной информации о водителе
+                cur.execute("""
+                    SELECT 
+                        driver_id,
+                        second_name, 
+                        first_name, 
+                        patronymic,
+                        hire_date, 
+                        car_id
+                    FROM drivers
+                    WHERE driver_id = %s
+                """, (driver_id,))
+                driver_info = cur.fetchone()
+                
+                if not driver_info:
+                    flash('Водитель не найден', 'danger')
+                    return render_template('select_driver.html', drivers=drivers, title='Отчет по эффективности водителя')
+                
+                # Форматирование имени водителя
+                full_name = f"{driver_info[1]} {driver_info[2]}"
+                if driver_info[3]:
+                    full_name += f" {driver_info[3]}"
+                
+                # Получение статистики по заказам
+                cur.execute("""
+                    SELECT 
+                        COUNT(*) AS total_orders,
+                        COALESCE(SUM(order_cost), 0) AS total_revenue,
+                        COALESCE(AVG(order_cost), 0) AS avg_order_cost,
+                        MIN(order_date) AS first_order_date,
+                        MAX(order_date) AS last_order_date
+                    FROM orders
+                    WHERE driver_id = %s
+                """, (driver_id,))
+                stats = cur.fetchone()
+                
+                # Получение информации о назначенной технике
+                car_name = "не назначена"
+                if driver_info[5]:  # Если есть car_id
+                    cur.execute("""
+                        SELECT brand, model 
+                        FROM cars 
+                        WHERE car_id = %s
+                    """, (driver_info[5],))
+                    car_data = cur.fetchone()
+                    if car_data:
+                        car_name = f"{car_data[0]} {car_data[1]}"
+                
+                # Получение месячной статистики
+                cur.execute("""
+                    SELECT 
+                        TO_CHAR(order_date, 'YYYY-MM') AS month,
+                        COUNT(*) AS orders_count,
+                        COALESCE(SUM(order_cost), 0) AS month_revenue
+                    FROM orders
+                    WHERE driver_id = %s
+                    GROUP BY TO_CHAR(order_date, 'YYYY-MM')
+                    ORDER BY month
+                """, (driver_id,))
+                monthly_stats = cur.fetchall()
+                
+                # Подготовка данных для отображения
+                hire_date = driver_info[4].strftime('%d.%m.%Y') if driver_info[4] else 'не указана'
+                
+                # Обработка статистики
+                total_orders = stats[0] if stats else 0
+                total_revenue = stats[1] if stats else 0
+                avg_order_cost = stats[2] if stats else 0
+                
+                first_order_date = stats[3].strftime('%d.%m.%Y') if stats and stats[3] else 'нет данных'
+                last_order_date = stats[4].strftime('%d.%m.%Y') if stats and stats[4] else 'нет данных'
+                
+                return render_template('driver_efficiency_report.html', 
+                                    driver_id=driver_id,
+                                    full_name=full_name,
+                                    hire_date=hire_date,
+                                    car_name=car_name,
+                                    total_orders=total_orders,
+                                    total_revenue=total_revenue,
+                                    avg_order_cost=avg_order_cost,
+                                    first_order_date=first_order_date,
+                                    last_order_date=last_order_date,
+                                    monthly_stats=monthly_stats)
+                
+            except psycopg2.Error as e:
+                app.logger.error(f"Ошибка БД при формировании отчета: {e}")
+                flash('Ошибка при формировании отчета', 'danger')
+                return render_template('select_driver.html', drivers=drivers, title='Отчет по эффективности водителя')
+            except Exception as e:
+                app.logger.error(f"Непредвиденная ошибка: {e}")
+                flash('Произошла непредвиденная ошибка', 'danger')
+                return render_template('select_driver.html', drivers=drivers, title='Отчет по эффективности водителя')
+            finally:
+                if cur: cur.close()
+                if conn: conn.close()
+        
+        # GET запрос - показать форму выбора водителя
+        return render_template('select_driver.html', drivers=drivers, title='Отчет по эффективности водителя')
+    
+    except Exception as e:
+        app.logger.error(f"Критическая ошибка в отчете по водителям: {e}")
+        flash('Произошла критическая ошибка при обработке запроса', 'danger')
+        return redirect(url_for('reports'))
 
 @app.route('/reports/gas_stats')
 def gas_stats_report():

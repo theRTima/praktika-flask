@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h1>Отчет по эффективности водителя</h1>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flashes">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            <h2>Информация о водителе</h2>
+        </div>
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-3">ФИО:</dt>
+                <dd class="col-sm-9">{{ full_name }}</dd>
+                
+                <dt class="col-sm-3">ID водителя:</dt>
+                <dd class="col-sm-9">{{ driver_id }}</dd>
+                
+                <dt class="col-sm-3">Дата найма:</dt>
+                <dd class="col-sm-9">{{ hire_date }}</dd>
+                
+                <dt class="col-sm-3">Назначенная техника:</dt>
+                <dd class="col-sm-9">{{ car_name }}</dd>
+            </dl>
+        </div>
+    </div>
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            <h2>Общая статистика</h2>
+        </div>
+        <div class="card-body">
+            <table class="table table-bordered">
+                <thead class="thead-light">
+                    <tr>
+                        <th>Показатель</th>
+                        <th>Значение</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Всего выполнено заказов</td>
+                        <td>{{ total_orders }}</td>
+                    </tr>
+                    <tr>
+                        <td>Общая выручка</td>
+                        <td>{{ total_revenue|round(2) }} руб</td>
+                    </tr>
+                    <tr>
+                        <td>Средняя стоимость заказа</td>
+                        <td>{{ avg_order_cost|round(2) }} руб</td>
+                    </tr>
+                    <tr>
+                        <td>Первый заказ</td>
+                        <td>{{ first_order_date }}</td>
+                    </tr>
+                    <tr>
+                        <td>Последний заказ</td>
+                        <td>{{ last_order_date }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header">
+            <h2>Статистика по месяцам</h2>
+        </div>
+        <div class="card-body">
+            {% if not monthly_stats %}
+                <div class="alert alert-info">
+                    Нет данных о заказах за выбранный период
+                </div>
+            {% else %}
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Месяц</th>
+                            <th>Кол-во заказов</th>
+                            <th>Выручка</th>
+                            <th>Средний чек</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for month in monthly_stats %}
+                            <tr>
+                                <td>{{ month[0] }}</td>
+                                <td>{{ month[1] }}</td>
+                                <td>{{ month[2]|round(2) }} руб</td>
+                                <td>
+                                    {% if month[1] > 0 %}
+                                        {{ (month[2] / month[1])|round(2) }} руб
+                                    {% else %}
+                                        0 руб
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="mt-4">
+        <a href="{{ url_for('driver_efficiency_report') }}" class="btn btn-secondary">
+            Вернуться к выбору водителя
+        </a>
+    </div>
+</div>
+{% endblock %}
