@@ -1,5 +1,6 @@
-Пример главного окна QT - ![image](https://github.com/user-attachments/assets/dab2fb87-5dc1-416e-b642-d165f438cf71)
+Забилдить в докере - docker-compose up --build
+После чего сайт открывается тут - http://localhost:5000/
 
-Структура -
+Файловая структура -
 ![image](https://github.com/user-attachments/assets/5a0774c5-9382-4a47-a99f-b765f963c8c2)
 
