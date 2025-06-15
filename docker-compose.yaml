@@ -1,0 +1,37 @@
+name: "praktika"
+version: '1.0'
+
+services:
+  app:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_NAME=my_db
+      - DB_USER=my_user
+      - DB_PASSWORD=12345
+      - SECRET_KEY=your-secret-key-here
+    networks:
+      - app-network
+    depends_on:
+      - db
+
+  db:
+    image: docker.io/library/postgres:16
+    environment:
+      POSTGRES_DB: my_db
+      POSTGRES_USER: my_user
+      POSTGRES_PASSWORD: 12345
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+volumes:
+  postgres_data:
+
+networks:
+  app-network:
+    driver: bridge

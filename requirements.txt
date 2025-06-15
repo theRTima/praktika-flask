@@ -1,0 +1,6 @@
+flask
+flask-wtf
+psycopg2-binary
+pandas
+matplotlib
+fpdf
