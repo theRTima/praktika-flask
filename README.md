@@ -8,22 +8,5 @@
 Панель управления Adminer -  http://localhost:8081/
 -------------------------------------------------------------------------------------------------------------
 Файловая структура -
-*│   app.py
- *│   docker-compose.yaml
-  *│   dockerfile
-│   requirements.txt
-│
-├───init-db
-│       init.sql
-│
-└───templates
-        base.html
-        cars.html
-        change_status.html
-        drivers.html
-        driver_efficiency_report.html
-        index.html
-        reports.html
-        report_form.html
-        select_driver.html
-        transport_cost_report.html
+-------------------------------------------------------------------------------------------------------------
+![2025-06-16_02-18](https://github.com/user-attachments/assets/0e992bf7-819e-422c-afaa-9df236d6f46e)
