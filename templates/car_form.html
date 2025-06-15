@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}{{ action }} технику{% endblock %}
+
+{% block content %}
+    <h1 class="mb-4">{{ action }} технику</h1>
+    
+    <form method="POST" class="needs-validation" novalidate>
+        {{ form.hidden_tag() }}
+        
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label for="car_id" class="form-label">ID техники</label>
+                {{ form.car_id(class="form-control", required=True) }}
+                <div class="invalid-feedback">
+                    Пожалуйста, укажите ID техники
+                </div>
+            </div>
+            <div class="col-md-6">
+                <label for="brand" class="form-label">Марка</label>
+                {{ form.brand(class="form-control", required=True) }}
+                <div class="invalid-feedback">
+                    Пожалуйста, укажите марку
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label for="model" class="form-label">Модель</label>
+                {{ form.model(class="form-control", required=True) }}
+                <div class="invalid-feedback">
+                    Пожалуйста, укажите модель
+                </div>
+            </div>
+            <div class="col-md-3">
+                <label for="year" class="form-label">Год выпуска</label>
+                {{ form.year(class="form-control", required=True) }}
+                <div class="invalid-feedback">
+                    Пожалуйста, укажите год
+                </div>
+            </div>
+            <div class="col-md-3">
+                <label for="capacity" class="form-label">Грузоподъемность (кг)</label>
+                {{ form.capacity(class="form-control", required=True) }}
+                <div class="invalid-feedback">
+                    Пожалуйста, укажите грузоподъемность
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mb-3">
+            <div class="col-md-3">
+                <label for="status" class="form-label">Статус</label>
+                {{ form.status(class="form-select", required=True) }}
+            </div>
+            <div class="col-md-3">
+                <label for="cost_per_km" class="form-label">Стоимость за км (руб)</label>
+                {{ form.cost_per_km(class="form-control", required=True) }}
+                <div class="invalid-feedback">
+                    Пожалуйста, укажите стоимость
+                </div>
+            </div>
+            <div class="col-md-3">
+                <label for="last_tech_date" class="form-label">Дата ТО (ДД.ММ.ГГГГ)</label>
+                {{ form.last_tech_date(class="form-control") }}
+            </div>
+            <div class="col-md-3">
+                <label for="licence_plate" class="form-label">Гос. номер</label>
+                {{ form.licence_plate(class="form-control", required=True) }}
+                <div class="invalid-feedback">
+                    Пожалуйста, укажите номер
+                </div>
+            </div>
+        </div>
+        
+        <div class="mt-4">
+            <button type="submit" class="btn btn-primary me-2">Сохранить</button>
+            <a href="{{ url_for('cars') }}" class="btn btn-secondary">Отмена</a>
+        </div>
+    </form>
+    
+    <script>
+        // Валидация формы
+        (function () {
+            'use strict'
+            const forms = document.querySelectorAll('.needs-validation')
+            
+            Array.from(forms).forEach(form => {
+                form.addEventListener('submit', event => {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+                    
+                    form.classList.add('was-validated')
+                }, false)
+            })
+        })()
+    </script>
+{% endblock %}

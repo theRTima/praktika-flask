@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Изменение статуса техники{% endblock %}
+
+{% block content %}
+    <h1 class="mb-4">Изменение статуса техники ID: {{ car_id }}</h1>
+    
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Текущий статус</h5>
+            <p class="card-text">
+                <span class="badge 
+                    {% if current_status == 'Ready' %}bg-success
+                    {% elif current_status == 'Work' %}bg-primary
+                    {% else %}bg-danger
+                    {% endif %} fs-5">
+                    {{ current_status }}
+                </span>
+            </p>
+        </div>
+    </div>
+    
+    <form method="POST">
+        <div class="mb-3">
+            <label for="status" class="form-label">Новый статус</label>
+            <select class="form-select" id="status" name="status" required>
+                <option value="Ready" {% if current_status == 'Ready' %}selected{% endif %}>Ready</option>
+                <option value="Work" {% if current_status == 'Work' %}selected{% endif %}>Work</option>
+                <option value="Repair" {% if current_status == 'Repair' %}selected{% endif %}>Repair</option>
+            </select>
+        </div>
+        
+        <div class="mt-4">
+            <button type="submit" class="btn btn-primary me-2">Сохранить</button>
+            <a href="{{ url_for('cars') }}" class="btn btn-secondary">Отмена</a>
+        </div>
+    </form>
+{% endblock %}

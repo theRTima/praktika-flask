@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Отчет по стоимости перевозок за {{ year }} год{% endblock %}
+
+{% block content %}
+    <h1 class="mb-4">Отчет по стоимости перевозок за {{ year }} год</h1>
+    
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="card-title">Итоговая статистика</h5>
+                    <p class="card-text">
+                        Общая стоимость: <strong>{{ total_cost|round(2) }} руб</strong><br>
+                        Количество заказов: <strong>{{ total_orders }}</strong>
+                    </p>
+                </div>
+                <a href="#" class="btn btn-outline-primary">Экспорт в PDF</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Месяц</th>
+                    <th>Сумма перевозок (руб)</th>
+                    <th>Кол-во заказов</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in report_data %}
+                    <tr>
+                        <td>{{ row.month }}</td>
+                        <td>{{ row.total_cost|round(2) }}</td>
+                        <td>{{ row.orders_count }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot class="table-dark">
+                <tr>
+                    <th>ИТОГО:</th>
+                    <th>{{ total_cost|round(2) }}</th>
+                    <th>{{ total_orders }}</th>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+{% endblock %}

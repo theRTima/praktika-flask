@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}{{ action }} водителя{% endblock %}
+
+{% block content %}
+    <h1 class="mb-4">{{ action }} водителя</h1>
+    
+    <form method="POST" class="needs-validation" novalidate>
+        {{ form.hidden_tag() }}
+        
+        <div class="row mb-3">
+            <div class="col-md-3">
+                <label for="driver_id" class="form-label">ID водителя</label>
+                {{ form.driver_id(class="form-control", required=True) }}
+                <div class="invalid-feedback">
+                    Пожалуйста, укажите ID
+                </div>
+            </div>
+            <div class="col-md-3">
+                <label for="second_name" class="form-label">Фамилия</label>
+                {{ form.second_name(class="form-control", required=True) }}
+                <div class="invalid-feedback">
+                    Пожалуйста, укажите фамилию
+                </div>
+            </div>
+            <div class="col-md-3">
+                <label for="first_name" class="form-label">Имя</label>
+                {{ form.first_name(class="form-control", required=True) }}
+                <div class="invalid-feedback">
+                    Пожалуйста, укажите имя
+                </div>
+            </div>
+            <div class="col-md-3">
+                <label for="patronymic" class="form-label">Отчество</label>
+                {{ form.patronymic(class="form-control") }}
+            </div>
+        </div>
+        
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label for="phone_number" class="form-label">Телефон</label>
+                {{ form.phone_number(class="form-control", required=True) }}
+                <div class="invalid-feedback">
+                    Пожалуйста, укажите телефон
+                </div>
+            </div>
+            <div class="col-md-4">
+                <label for="licence_number" class="form-label">Номер прав</label>
+                {{ form.licence_number(class="form-control", required=True) }}
+                <div class="invalid-feedback">
+                    Пожалуйста, укажите номер прав
+                </div>
+            </div>
+            <div class="col-md-4">
+                <label for="hire_date" class="form-label">Дата найма (ДД.ММ.ГГГГ)</label>
+                {{ form.hire_date(class="form-control") }}
+            </div>
+        </div>
+        
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label for="car_id" class="form-label">ID назначенной техники</label>
+                {{ form.car_id(class="form-control") }}
+                <div class="form-text">Оставьте пустым, если не назначена</div>
+            </div>
+        </div>
+        
+        <div class="mt-4">
+            <button type="submit" class="btn btn-primary me-2">Сохранить</button>
+            <a href="{{ url_for('drivers') }}" class="btn btn-secondary">Отмена</a>
+        </div>
+    </form>
+    
+    <script>
+        // Валидация формы
+        (function () {
+            'use strict'
+            const forms = document.querySelectorAll('.needs-validation')
+            
+            Array.from(forms).forEach(form => {
+                form.addEventListener('submit', event => {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+                    
+                    form.classList.add('was-validated')
+                }, false)
+            })
+        })()
+    </script>
+{% endblock %}

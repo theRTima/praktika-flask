@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+    <h1 class="mb-4">{{ title }}</h1>
+    
+    <form method="POST" class="card p-4 mb-4">
+        {% block report_form_content %}{% endblock %}
+        
+        <div class="mt-3">
+            <button type="submit" class="btn btn-primary me-2">Сформировать</button>
+            <a href="{{ url_for('reports') }}" class="btn btn-secondary">Отмена</a>
+        </div>
+    </form>
+{% endblock %}
